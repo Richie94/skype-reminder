@@ -90,7 +90,7 @@ class SkypeReminder(object):
 
 	def write_message(self, to, msg):
 		chat = self.skype.contacts[to]
-		chat.chat.sendMsg(msg)
+		#chat.chat.sendMsg(msg)
 		logging.info("{}\t{}".format(to, msg))
 
 	def send_out_cleaning_message(self, text):
