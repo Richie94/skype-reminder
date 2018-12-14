@@ -1,9 +1,19 @@
-from skpy import SkypeEventLoop, SkypeNewMessageEvent
+from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg
+
 import re
+import io
+import numpy as np
+
+from PIL import Image
+
+from keras.preprocessing.image import img_to_array
+from keras.applications.resnet50 import preprocess_input, decode_predictions
+from keras.applications import ResNet50
 
 PING_REGEX = re.compile('ping')
 BATHROOM_REGEX = re.compile('bad \w*? \w*?$')
 USERS_REGEX = re.compile('users')
+
 
 class MySkype(SkypeEventLoop):
 
@@ -12,6 +22,7 @@ class MySkype(SkypeEventLoop):
 		self.ALL_REGEX = {PING_REGEX: self.pong,
 		                  BATHROOM_REGEX: self.move_bathroom,
 		                  USERS_REGEX: self.list_users}
+		self.resnet50 = None
 
 	def onEvent(self, event):
 		if (isinstance(event, SkypeNewMessageEvent)):
@@ -20,10 +31,12 @@ class MySkype(SkypeEventLoop):
 
 			print("Received new Message: ", from_person, msg_content)
 
-			for REGEX in self.ALL_REGEX.keys():
-				if REGEX.match(msg_content):
-					self.ALL_REGEX.get(REGEX)(event)
-
+			if (isinstance(event.msg, SkypeImageMsg)):
+				self.eva_picture(event)
+			elif (isinstance(event.msg, SkypeTextMsg)):
+				for REGEX in self.ALL_REGEX.keys():
+					if REGEX.match(msg_content):
+						self.ALL_REGEX.get(REGEX)(event)
 
 	def pong(self, event):
 		event.msg.chat.sendMsg("pong")
@@ -35,3 +48,17 @@ class MySkype(SkypeEventLoop):
 
 	def list_users(self, event):
 		pass
+
+	def eva_picture(self, event):
+		image = Image.open(io.BytesIO(event.msg.fileContent))
+
+		img_array = np.array([img_to_array(image.resize((224, 224)))])
+		output = preprocess_input(img_array)
+
+		# lazy load
+		if self.resnet50 is None:
+			self.resnet50 = ResNet50(weights='imagenet')
+		predictions = self.resnet50.predict(output)
+
+		res = str([x[1:] for x in decode_predictions(predictions, top=3)[0]])
+		event.msg.chat.sendMsg(res)
