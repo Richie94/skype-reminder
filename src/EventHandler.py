@@ -4,6 +4,9 @@ import re
 import io
 import numpy as np
 
+import time
+import datetime
+
 from PIL import Image
 
 from keras.preprocessing.image import img_to_array
@@ -23,6 +26,16 @@ class MySkype(SkypeEventLoop):
 		                  BATHROOM_REGEX: self.move_bathroom,
 		                  USERS_REGEX: self.list_users}
 		self.resnet50 = None
+
+	def cycle(self):
+		super(MySkype, self).cycle()
+		print(datetime.datetime.now())
+		# hier käme der check, ob ich jetzt den task abschicken muss
+
+	def loop(self):
+		while True:
+			self.cycle()
+			time.sleep(1)
 
 	def onEvent(self, event):
 		if (isinstance(event, SkypeNewMessageEvent)):
@@ -62,3 +75,6 @@ class MySkype(SkypeEventLoop):
 
 		res = str([x[1:] for x in decode_predictions(predictions, top=3)[0]])
 		event.msg.chat.sendMsg(res)
+
+evl = MySkype(user="u.unwichtiger@gmx.de", pwd="mstrprprspsswrt2")
+evl.loop()
