@@ -20,7 +20,6 @@ class SkypeReminder(object):
 		self.jobs = JobManager([Job(x["_id"], x["name"]) for x in self.db.jobs.find()])
 
 		self.path = "/mnt/data/workspace/python/skypeReminder/resources/"
-		print(login_data)
 
 		self.skype = Skype(user=login_data["email"], pwd=login_data["password"])
 		today = datetime.datetime.now()
