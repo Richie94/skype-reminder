@@ -18,6 +18,8 @@ from keras.applications import ResNet50
 
 from CleanPlanProvider import CleanPlanProvider
 
+THRESH_HOUR = 7
+
 PING_REGEX = re.compile('ping')
 BATHROOM_SWITCH_REGEX = re.compile('bad \w*? \w*?$')
 BATHROOM_REGEX = re.compile('bad \w*? \w*?$')
@@ -48,11 +50,19 @@ class MySkype(SkypeEventLoop):
 		self.resnet50 = None
 
 		self.path = "/mnt/data/workspace/python/skypeReminder/resources/"
+		self.send_today = False
 
 	def cycle(self):
 		super(MySkype, self).cycle()
-		print(datetime.datetime.now())
-	# hier käme der check, ob ich jetzt den task abschicken muss
+		now = datetime.datetime.now()
+
+		if (now.hour < THRESH_HOUR):
+			self.send_today = False
+
+		if (now.hour > THRESH_HOUR) & self.send_today == False:
+			self.do_once_a_day()
+			self.send_today = True
+
 
 	def loop(self):
 		while True:
@@ -133,7 +143,7 @@ class MySkype(SkypeEventLoop):
 		chat.chat.sendMsg(msg)
 		logging.info("{}\t{}".format(to, msg))
 
-	def do_normal_jobs(self):
+	def do_once_a_day(self):
 		weekday = datetime.datetime.today().weekday()
 		# Montag
 		logging.info("Current Day: {}".format(weekday))
