@@ -22,15 +22,8 @@ THRESH_HOUR = 7
 
 PING_REGEX = re.compile('ping')
 BATHROOM_SWITCH_REGEX = re.compile('bad \w*? \w*?$')
-BATHROOM_REGEX = re.compile('bad \w*? \w*?$')
+BATHROOM_REGEX = re.compile('bad')
 USERS_REGEX = re.compile('users')
-
-
-def write_message(event, msg):
-	# TODO: format event to username
-	logging.info("{}\t{}".format(event, msg))
-	event.msg.chat.sendMsg(msg)
-
 
 class MySkype(SkypeEventLoop):
 
@@ -51,6 +44,9 @@ class MySkype(SkypeEventLoop):
 
 		self.path = "/mnt/data/workspace/python/skypeReminder/resources/"
 		self.send_today = False
+
+		self.test_mode = True
+		self.last_messages = []
 
 	def cycle(self):
 		super(MySkype, self).cycle()
@@ -83,35 +79,45 @@ class MySkype(SkypeEventLoop):
 					if REGEX.match(msg_content):
 						self.ALL_REGEX.get(REGEX)(event)
 
-	@staticmethod
-	def pong(event):
-		event.msg.chat.sendMsg("pong")
+	def write_message(self, event, msg):
+		# TODO: format event to username
+		logging.info("{}\t{}".format(event.msg.userId, msg))
+		self.last_messages.append("{}\t{}".format(event, msg))
+		if not self.test_mode:
+			event.msg.chat.sendMsg(msg)
+
+	def pong(self, event):
+		self.write_message(event, "pong")
 
 	def move_bathroom(self, event):
 		persons = event.msg.content.split(" ")[1:]
 		# check if persons do exist
 		for person in persons:
 			if person not in self.user_names:
-				write_message(event, "User {} ist mir unbekannt".format(person))
+				self.write_message(event, "User {} ist mir unbekannt".format(person))
 				return
 
 		# postpone bathroom
 		self.postpone_bathroom(event, persons)
-		write_message(event, "verschiebe Badzimmer um 1 Woche für " + str(persons))
+		self.write_message(event, "verschiebe Badzimmer um 1 Woche für " + str(persons))
 
 	# Takes list of user names
 	def postpone_bathroom(self, event, persons):
-		allowed_user_names = [u.name for u in self.user.user_list]
 		for user in persons:
-			if user in allowed_user_names:
-				self.bath_plan[user] = str((1 + int(self.bath_plan[user])) % len(self.jobs.job_list))
-				self.cpp.postpone_bathroom(user, self.bath_plan[user])
+			if user in self.user_names:
+				if (int(self.bath_plan[user]) == 0):
+					self.bath_plan[user] = str(len(self.jobs.job_list))
+				else:
+					self.bath_plan[user] = str(int(self.bath_plan[user]) - 1)
 
-		for user in self.user.user_list:
+				if not self.test_mode:
+					self.cpp.postpone_bathroom(user, self.bath_plan[user])
+
+		for user in self.users.user_list:
 			self.write_message_to(user.contact, "{} updated bathroom_plan".format(event.msg.userId))
 
 	def list_users(self, event):
-		write_message(event, ", ".join([u["name"] for u in self.users.user_list]))
+		self.write_message(event, ", ".join(self.user_names))
 
 	def eva_picture(self, event):
 		image = Image.open(io.BytesIO(event.msg.fileContent))
@@ -125,7 +131,7 @@ class MySkype(SkypeEventLoop):
 		predictions = self.resnet50.predict(output)
 
 		res = str([x[1:] for x in decode_predictions(predictions, top=3)[0]])
-		write_message(event, res)
+		self.write_message(event, res)
 
 	def motivational_tweet(self, contact):
 		quotes = set(open(self.path + "positiveQuotes.txt", "r").read().split("\n"))
@@ -135,12 +141,14 @@ class MySkype(SkypeEventLoop):
 	def print_bathroom(self, event):
 		format_bathroom = ""
 		for name, job_id in self.bath_plan.items():
-			format_bathroom += name + ": " + self.jobs.getJobById(job_id) + "\n"
-		write_message(event, format_bathroom)
+			format_bathroom += name + ": " + self.jobs.getJobById(job_id).name + "\n"
+		self.write_message(event, format_bathroom)
 
 	def write_message_to(self, to, msg):
 		chat = self.contacts[to]
-		chat.chat.sendMsg(msg)
+		if not self.test_mode:
+			chat.chat.sendMsg(msg)
+		self.last_messages.append("{}\t{}".format(to, msg))
 		logging.info("{}\t{}".format(to, msg))
 
 	def do_once_a_day(self):
