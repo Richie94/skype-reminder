@@ -20,19 +20,21 @@ from CleanPlanProvider import CleanPlanProvider
 
 THRESH_HOUR = 7
 
-PING_REGEX = re.compile('ping')
-BATHROOM_SWITCH_REGEX = re.compile('bad \w*? \w*?$')
-BATHROOM_REGEX = re.compile('bad')
-USERS_REGEX = re.compile('users')
+USERS_LIST = ('users', 'list all users')
+BATHROOM_LIST = ('bad', 'show current bathroom assignments')
+BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people')
+PING_CMD = ('ping', 'basic ping-pong')
+HELP_CMD = ('help', 'shows this')
 
 class MySkype(SkypeEventLoop):
 
 	def __init__(self, user, pwd):
 		super(MySkype, self).__init__(user=user, pwd=pwd)
-		self.ALL_REGEX = {PING_REGEX: self.pong,
-		                  BATHROOM_SWITCH_REGEX: self.move_bathroom,
-		                  USERS_REGEX: self.list_users,
-		                  BATHROOM_REGEX: self.print_bathroom}
+		self.ALL_COMMANDS = {PING_CMD: self.pong,
+		                     BATHROOM_SWITCH_CMD: self.move_bathroom,
+		                     USERS_LIST: self.list_users,
+		                     BATHROOM_LIST: self.print_bathroom,
+		                     HELP_CMD: self.print_help}
 		self.cpp = CleanPlanProvider()
 		self.users = self.cpp.user
 		self.user_names = [u.name for u in self.users.user_list]
@@ -67,6 +69,7 @@ class MySkype(SkypeEventLoop):
 
 	def onEvent(self, event):
 		if isinstance(event, SkypeNewMessageEvent):
+			matched = False
 			from_person = event.msg.userId
 			msg_content = event.msg.content
 
@@ -74,10 +77,17 @@ class MySkype(SkypeEventLoop):
 
 			if isinstance(event.msg, SkypeImageMsg):
 				self.eva_picture(event)
+				matched = True
 			elif isinstance(event.msg, SkypeTextMsg):
-				for REGEX in self.ALL_REGEX.keys():
+				for CMD in self.ALL_COMMANDS.keys():
+					REGEX = re.compile(CMD[0])
 					if REGEX.match(msg_content):
-						self.ALL_REGEX.get(REGEX)(event)
+						self.ALL_COMMANDS.get(CMD)(event)
+						matched = True
+
+			if not matched:
+				self.write_message(event, "Befehl nicht verstanden!")
+
 
 	def write_message(self, event, msg):
 		# TODO: format event to username
@@ -85,6 +95,12 @@ class MySkype(SkypeEventLoop):
 		self.last_messages.append("{}\t{}".format(event, msg))
 		if not self.test_mode:
 			event.msg.chat.sendMsg(msg)
+
+	def print_help(self, event):
+		help_text = ""
+		for CMD in self.ALL_COMMANDS:
+			help_text += "{} - {}\n".format(CMD[0], CMD[1])
+		self.write_message(event, help_text)
 
 	def pong(self, event):
 		self.write_message(event, "pong")
