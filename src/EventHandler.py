@@ -18,7 +18,7 @@ import datetime
 from PIL import Image
 
 from keras.preprocessing.image import img_to_array
-from keras.applications import vgg16
+from keras.applications import resnet50
 
 from CleanPlanProvider import CleanPlanProvider
 
@@ -147,14 +147,14 @@ class MySkype(SkypeEventLoop):
 		image = Image.open(io.BytesIO(event.msg.fileContent))
 
 		img_array = np.array([img_to_array(image.resize((224, 224)))])
-		output = vgg16.preprocess_input(img_array)
+		output = resnet50.preprocess_input(img_array)
 
 		# lazy load
 		if self.model is None:
-			self.model = vgg16.VGG16(weights='imagenet')
+			self.model = resnet50.ResNet50(weights='imagenet')
 		predictions = self.model.predict(output)
 
-		res = str([x[1:] for x in vgg16.decode_predictions(predictions, top=5)[0]])
+		res = str([x[1:] for x in resnet50.decode_predictions(predictions, top=5)[0]])
 		self.write_message(event, res)
 
 	def motivational_tweet(self, contact):
