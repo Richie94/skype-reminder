@@ -52,7 +52,7 @@ class MySkype(SkypeEventLoop):
 		self.path = resources.config.path
 		self.send_today = False
 
-		self.test_mode = True
+		self.test_mode = resources.config.test_mode
 		self.last_messages = []
 
 	def cycle(self):
