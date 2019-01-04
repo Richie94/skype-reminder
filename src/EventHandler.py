@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0,'../resources/')
+
 import random
 import logging
 
