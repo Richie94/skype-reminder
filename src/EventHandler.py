@@ -18,10 +18,10 @@ import datetime
 from PIL import Image
 
 from keras.preprocessing.image import img_to_array
-from keras.applications.resnet50 import preprocess_input, decode_predictions
-from keras.applications import ResNet50
+from keras.applications import vgg16
 
 from CleanPlanProvider import CleanPlanProvider
+
 
 THRESH_HOUR = 7
 
@@ -48,7 +48,7 @@ class MySkype(SkypeEventLoop):
 
 		self.bath_plan = self.cpp.get_bath_assignment()
 
-		self.resnet50 = None
+		self.model = None
 
 		self.path = resources.config.path
 		self.send_today = False
@@ -147,14 +147,14 @@ class MySkype(SkypeEventLoop):
 		image = Image.open(io.BytesIO(event.msg.fileContent))
 
 		img_array = np.array([img_to_array(image.resize((224, 224)))])
-		output = preprocess_input(img_array)
+		output = vgg16.preprocess_input(img_array)
 
 		# lazy load
-		if self.resnet50 is None:
-			self.resnet50 = ResNet50(weights='imagenet')
-		predictions = self.resnet50.predict(output)
+		if self.model is None:
+			self.model = vgg16.VGG16(weights='imagenet')
+		predictions = self.model.predict(output)
 
-		res = str([x[1:] for x in decode_predictions(predictions, top=3)[0]])
+		res = str([x[1:] for x in vgg16.decode_predictions(predictions, top=5)[0]])
 		self.write_message(event, res)
 
 	def motivational_tweet(self, contact):
