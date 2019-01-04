@@ -43,6 +43,7 @@ class MySkype(SkypeEventLoop):
 		                     HELP_CMD: self.print_help}
 		self.users = self.cpp.user
 		self.user_names = [u.name for u in self.users.user_list]
+		self.allowed_contacts = [u.contact for u in self.users.user_list]
 		self.jobs = self.cpp.jobs
 
 		self.bath_plan = self.cpp.get_bath_assignment()
@@ -78,7 +79,10 @@ class MySkype(SkypeEventLoop):
 			from_person = event.msg.userId
 			msg_content = event.msg.content
 
-			print("Received new Message: ", from_person, msg_content)
+			print("Received new Message from {} : '{}'".format(from_person, msg_content))
+
+			if from_person not in self.allowed_contacts:
+				return
 
 			if isinstance(event.msg, SkypeImageMsg):
 				self.eva_picture(event)
