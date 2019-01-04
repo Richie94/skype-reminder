@@ -63,8 +63,8 @@ class MySkype(SkypeEventLoop):
 			self.send_today = False
 
 		if (now.hour > THRESH_HOUR) & self.send_today == False:
-			self.do_once_a_day()
 			self.send_today = True
+			self.do_once_a_day()
 
 
 	def loop(self):
@@ -185,8 +185,6 @@ class MySkype(SkypeEventLoop):
 			self.send_out_cleaning_message(text)
 
 		self.motivational_tweet(self.users.getContact("Melanie"))
-
-		logging.info("Finished Skype Reminder")
 
 	def send_out_cleaning_message(self, text):
 		today = datetime.datetime.now()
