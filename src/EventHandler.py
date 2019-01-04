@@ -95,7 +95,6 @@ class MySkype(SkypeEventLoop):
 
 
 	def write_message(self, event, msg):
-		# TODO: format event to username
 		logging.info("{}\t{}".format(event.msg.userId, msg))
 		self.last_messages.append("{}\t{}".format(event, msg))
 		if not self.test_mode:
@@ -196,10 +195,9 @@ class MySkype(SkypeEventLoop):
 			to = self.users.getContact(user)
 
 			self.write_message_to(to, text.format(job.name))
-			bath_text = "Außerdem bist du mit Bad dran."
 
 			if self.cpp.get_bath_assignment()[user] == job.id:
-				self.write_message_to(to, bath_text)
+				self.write_message_to(to, "Außerdem bist du mit Bad dran.")
 
 			if job.name == "Müll" and calendar_week % 3 == 2:
 				self.write_message_to(to, "Denk an die Flaschen, du Flasche ;)")
