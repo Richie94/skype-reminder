@@ -12,7 +12,7 @@ class CleanPlanProvider(object):
 		self.db = client.cleanjobs
 		self.user = UserManager([User(x["name"], x["contact"]) for x in self.db.contacts.find()])
 		self.jobs = JobManager([Job(x["_id"], x["name"]) for x in self.db.jobs.find()])
-
+		self.login_data = self.db.user.find_one()
 
 	def get_current_assignments(self):
 		today = datetime.datetime.now()

@@ -10,6 +10,8 @@ import numpy as np
 import time
 import datetime
 
+import resources.config
+
 from PIL import Image
 
 from keras.preprocessing.image import img_to_array
@@ -28,14 +30,14 @@ HELP_CMD = ('help', 'shows this')
 
 class MySkype(SkypeEventLoop):
 
-	def __init__(self, user, pwd):
-		super(MySkype, self).__init__(user=user, pwd=pwd)
+	def __init__(self):
+		self.cpp = CleanPlanProvider()
+		super(MySkype, self).__init__(user=self.cpp.login_data["user"], pwd=self.cpp.login_data["password"])
 		self.ALL_COMMANDS = {PING_CMD: self.pong,
 		                     BATHROOM_SWITCH_CMD: self.move_bathroom,
 		                     USERS_LIST: self.list_users,
 		                     BATHROOM_LIST: self.print_bathroom,
 		                     HELP_CMD: self.print_help}
-		self.cpp = CleanPlanProvider()
 		self.users = self.cpp.user
 		self.user_names = [u.name for u in self.users.user_list]
 		self.jobs = self.cpp.jobs
@@ -44,7 +46,7 @@ class MySkype(SkypeEventLoop):
 
 		self.resnet50 = None
 
-		self.path = "/mnt/data/workspace/python/skypeReminder/resources/"
+		self.path = resources.config.path
 		self.send_today = False
 
 		self.test_mode = True
@@ -187,7 +189,7 @@ class MySkype(SkypeEventLoop):
 		today = datetime.datetime.now()
 		calendar_week = today.isocalendar()[1]
 
-		for current_assignment in self.bath_plan:
+		for current_assignment in self.cpp.get_current_assignments():
 			user = current_assignment["user"]
 			job = self.jobs.getJobById(current_assignment["job"])
 			to = self.users.getContact(user)
@@ -205,12 +207,12 @@ class MySkype(SkypeEventLoop):
 if __name__ == "__main__":
 	logging.basicConfig(
 		format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO,
-		filename='/mnt/data/workspace/python/skypeReminder/resources/reminder.log',
+		filename=resources.config.path + 'reminder.log',
 		filemode="a")
 	logFormatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 	consoleHandler = logging.StreamHandler()
 	consoleHandler.setFormatter(logFormatter)
 	logging.getLogger().addHandler(consoleHandler)
 
-	evl = MySkype(user="u.unwichtiger@gmx.de", pwd="mstrprprspsswrt2")
+	evl = MySkype()
 	evl.loop()
