@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0,'../resources/')
+sys.path.insert(0,'../')
+import resources.config
 
 import random
 import logging
@@ -13,7 +14,6 @@ import numpy as np
 import time
 import datetime
 
-import resources.config
 
 from PIL import Image
 
@@ -35,7 +35,7 @@ class MySkype(SkypeEventLoop):
 
 	def __init__(self):
 		self.cpp = CleanPlanProvider()
-		super(MySkype, self).__init__(user=self.cpp.login_data["user"], pwd=self.cpp.login_data["password"])
+		super(MySkype, self).__init__(user=self.cpp.login_data["email"], pwd=self.cpp.login_data["password"])
 		self.ALL_COMMANDS = {PING_CMD: self.pong,
 		                     BATHROOM_SWITCH_CMD: self.move_bathroom,
 		                     USERS_LIST: self.list_users,
