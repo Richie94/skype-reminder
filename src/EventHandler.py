@@ -26,7 +26,7 @@ from CleanPlanProvider import CleanPlanProvider
 THRESH_HOUR = 7
 
 USERS_LIST = ('users', 'list all users')
-JOBS_CMD = ('(jobs)|(aufgaben) \d*$', 'lists current assignments e.g. "jobs x" with x as the number of weeks to advance')
+JOBS_CMD = ('(jobs)|(aufgaben)( \d*)?$', 'lists current assignments e.g. "jobs x" with x as the number of weeks to advance')
 BATHROOM_LIST = ('bad', 'show current bathroom assignments')
 BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people e.g. "bad Peter Bernd"')
 PING_CMD = ('ping', 'basic ping-pong')
@@ -191,7 +191,7 @@ class MySkype(SkypeEventLoop):
 		self.write_message_to(contact, "Und übrigends: {}".format(chosen_quote))
 
 	def print_bathroom(self, event):
-		format_bathroom = ""
+		format_bathroom = "Badezimmer korreliert mit: \n"
 		for name, job_id in self.bath_plan.items():
 			format_bathroom += name + ": " + self.jobs.getJobById(job_id).name + "\n"
 		self.write_message(event, format_bathroom)
