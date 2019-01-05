@@ -25,7 +25,7 @@ from CleanPlanProvider import CleanPlanProvider
 THRESH_HOUR = 7
 
 USERS_LIST = ('users', 'list all users')
-JOBS_CMD = ('(jobs)|(aufgaben)', 'list all jobs with current assignment')
+JOBS_CMD = ('(jobs)|(aufgaben) \d*$', 'list all jobs with current assignment (number behind for preview in weeks possible)')
 BATHROOM_LIST = ('bad', 'show current bathroom assignments')
 BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people')
 PING_CMD = ('ping', 'basic ping-pong')
@@ -149,9 +149,14 @@ class MySkype(SkypeEventLoop):
 		self.write_message(event, ", ".join(self.user_names))
 
 	def current_job_assignments(self, event):
+		offset = 0
+		split = event.msg.content.split(" ")
+		if len(split) > 0:
+			if split[1].isdigit():
+				offset = int(split[1])
 		text = ""
 
-		for current_assignment in  self.cpp.get_current_assignments():
+		for current_assignment in  self.cpp.get_current_assignments(offset=offset):
 			job = self.jobs.getJobById(current_assignment["job"])
 			user = current_assignment["user"]
 

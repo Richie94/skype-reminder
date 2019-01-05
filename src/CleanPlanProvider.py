@@ -14,11 +14,9 @@ class CleanPlanProvider(object):
 		self.jobs = JobManager([Job(x["_id"], x["name"]) for x in self.db.jobs.find()])
 		self.login_data = self.db.user.find_one()
 
-	def get_current_assignments(self):
-		today = datetime.datetime.now()
+	def get_current_assignments(self, offset=0):
+		today = datetime.datetime.now() + datetime.timedelta(days = 7 * offset)
 		assignment_key = self.assignment_key_from_date(today)
-
-		self.calendarWeek = today.isocalendar()[1]
 
 		self.currentAssignments = list(self.db.assignments.find({"date": assignment_key}))
 		if len(self.currentAssignments) == 0:
