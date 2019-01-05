@@ -7,6 +7,7 @@ import logging
 
 from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg
 
+import requests
 import re
 import io
 import numpy as np
@@ -30,6 +31,7 @@ BATHROOM_LIST = ('bad', 'show current bathroom assignments')
 BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people')
 PING_CMD = ('ping', 'basic ping-pong')
 HELP_CMD = ('(help)|(hilfe)', 'shows this')
+JOKE_CMD = ('(joke)|(witz)', 'get dad joke')
 
 class MySkype(SkypeEventLoop):
 
@@ -41,7 +43,8 @@ class MySkype(SkypeEventLoop):
 		                     USERS_LIST: self.list_users,
 		                     BATHROOM_LIST: self.print_bathroom,
 		                     HELP_CMD: self.print_help,
-		                     JOBS_CMD: self.current_job_assignments}
+		                     JOBS_CMD: self.current_job_assignments,
+		                     JOKE_CMD: self.print_dad_joke}
 		self.users = self.cpp.user
 		self.user_names = [u.name for u in self.users.user_list]
 		self.allowed_contacts = [u.contact for u in self.users.user_list]
@@ -108,6 +111,10 @@ class MySkype(SkypeEventLoop):
 		self.last_messages.append("{}\t{}".format(event, msg))
 		if not self.test_mode:
 			event.msg.chat.sendMsg(msg)
+
+	def print_dad_joke(self, event):
+		r = requests.get('https://icanhazdadjoke.com/', headers={"Accept": "application/json"})
+		self.write_message(event, r.json()["joke"])
 
 	def print_help(self, event):
 		help_text = ""
