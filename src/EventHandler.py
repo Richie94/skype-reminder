@@ -14,11 +14,10 @@ import numpy as np
 import time
 import datetime
 
-
 from PIL import Image
 
 from keras.preprocessing.image import img_to_array
-from keras.applications import resnet50, inception_v3
+from keras.applications import  inception_v3
 
 from CleanPlanProvider import CleanPlanProvider
 
@@ -29,7 +28,7 @@ USERS_LIST = ('users', 'list all users')
 BATHROOM_LIST = ('bad', 'show current bathroom assignments')
 BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people')
 PING_CMD = ('ping', 'basic ping-pong')
-HELP_CMD = ('help', 'shows this')
+HELP_CMD = ('(help)|(hilfe)', 'shows this')
 
 class MySkype(SkypeEventLoop):
 
@@ -57,13 +56,20 @@ class MySkype(SkypeEventLoop):
 		self.last_messages = []
 
 	def cycle(self):
-		super(MySkype, self).cycle()
-		now = datetime.datetime.now()
-		today = now.strftime("%d-%m-%Y")
+		try:
+			super(MySkype, self).cycle()
+			now = datetime.datetime.now()
+			today = now.strftime("%d-%m-%Y")
 
-		if (now.hour > THRESH_HOUR) & (self.cpp.get_last_daily_write() != today):
-			self.cpp.set_last_daily_write()
-			self.do_once_a_day()
+			if (now.hour > THRESH_HOUR) & (self.cpp.get_last_daily_write() != today):
+				self.cpp.set_last_daily_write()
+				self.do_once_a_day()
+
+		except Exception as e:
+			logging.error("Error in cycle", e)
+			time.sleep(10)
+			pass
+
 
 
 	def loop(self):
