@@ -158,7 +158,7 @@ class MySkype(SkypeEventLoop):
 	def current_job_assignments(self, event):
 		offset = 0
 		split = event.msg.content.split(" ")
-		if len(split) > 0:
+		if len(split) > 1:
 			if split[1].isdigit():
 				offset = int(split[1])
 		text = ""
