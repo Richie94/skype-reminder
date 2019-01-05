@@ -26,9 +26,9 @@ from CleanPlanProvider import CleanPlanProvider
 THRESH_HOUR = 7
 
 USERS_LIST = ('users', 'list all users')
-JOBS_CMD = ('(jobs)|(aufgaben) \d*$', 'list all jobs with current assignment (number behind for preview in weeks possible)')
+JOBS_CMD = ('(jobs)|(aufgaben) \d*$', 'lists current assignments e.g. "jobs x" with x as the number of weeks to advance')
 BATHROOM_LIST = ('bad', 'show current bathroom assignments')
-BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people')
+BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people e.g. "bad Peter Bernd"')
 PING_CMD = ('ping', 'basic ping-pong')
 HELP_CMD = ('(help)|(hilfe)', 'shows this')
 JOKE_CMD = ('(joke)|(witz)', 'get dad joke')
