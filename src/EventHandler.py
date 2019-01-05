@@ -25,6 +25,7 @@ from CleanPlanProvider import CleanPlanProvider
 THRESH_HOUR = 7
 
 USERS_LIST = ('users', 'list all users')
+JOBS_CMD = ('(jobs)|(aufgaben)', 'list all jobs with current assignment')
 BATHROOM_LIST = ('bad', 'show current bathroom assignments')
 BATHROOM_SWITCH_CMD = ('bad \w*? \w*?$', 'postpone bathroom for two people')
 PING_CMD = ('ping', 'basic ping-pong')
@@ -39,7 +40,8 @@ class MySkype(SkypeEventLoop):
 		                     BATHROOM_SWITCH_CMD: self.move_bathroom,
 		                     USERS_LIST: self.list_users,
 		                     BATHROOM_LIST: self.print_bathroom,
-		                     HELP_CMD: self.print_help}
+		                     HELP_CMD: self.print_help,
+		                     JOBS_CMD: self.current_job_assignments}
 		self.users = self.cpp.user
 		self.user_names = [u.name for u in self.users.user_list]
 		self.allowed_contacts = [u.contact for u in self.users.user_list]
@@ -69,7 +71,6 @@ class MySkype(SkypeEventLoop):
 			logging.error("Error in cycle", e)
 			time.sleep(10)
 			pass
-
 
 
 	def loop(self):
@@ -146,6 +147,17 @@ class MySkype(SkypeEventLoop):
 
 	def list_users(self, event):
 		self.write_message(event, ", ".join(self.user_names))
+
+	def current_job_assignments(self, event):
+		text = ""
+
+		for current_assignment in  self.cpp.get_current_assignments():
+			job = self.jobs.getJobById(current_assignment["job"])
+			user = current_assignment["user"]
+
+			text += "{}: {}\n".format(user, job.name)
+
+		self.write_message(event, text)
 
 	def eva_picture(self, event):
 		image = Image.open(io.BytesIO(event.msg.fileContent))
