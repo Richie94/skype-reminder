@@ -59,12 +59,10 @@ class MySkype(SkypeEventLoop):
 	def cycle(self):
 		super(MySkype, self).cycle()
 		now = datetime.datetime.now()
+		today = now.strftime("%d-%m-%Y")
 
-		if (now.hour < THRESH_HOUR):
-			self.send_today = False
-
-		if (now.hour > THRESH_HOUR) & self.send_today == False:
-			self.send_today = True
+		if (now.hour > THRESH_HOUR) & (self.cpp.get_last_daily_write() != today):
+			self.cpp.set_last_daily_write()
 			self.do_once_a_day()
 
 

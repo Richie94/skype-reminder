@@ -47,6 +47,18 @@ class CleanPlanProvider(object):
 
 			now = now + cycle
 
+	def set_last_daily_write(self):
+		today = datetime.datetime.now()
+		self.db.daily_write.insert_one({"date" : today.strftime("%d-%m-%Y")})
+
+	def get_last_daily_write(self):
+		last_write = list(self.db.daily_write.find().sort("date", -1).limit(1))
+		if len(last_write) == 1:
+			return last_write[0]["date"]
+		else:
+			return ""
+
+
 	@staticmethod
 	def assignment_key_from_date(date):
 		return "{}-{}".format(date.isocalendar()[1], date.year)
