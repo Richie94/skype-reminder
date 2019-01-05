@@ -83,15 +83,15 @@ class MySkype(SkypeEventLoop):
 
 	def onEvent(self, event):
 		if isinstance(event, SkypeNewMessageEvent):
-			matched = False
 			from_person = event.msg.userId
-			msg_content = event.msg.content
-
-			print("Received new Message from {} : '{}'".format(from_person, msg_content))
 
 			if from_person not in self.allowed_contacts:
 				return
 
+			msg_content = event.msg.content
+			print("Received new Message from {} : '{}'".format(from_person, msg_content))
+
+			matched = False
 			if isinstance(event.msg, SkypeImageMsg):
 				self.eva_picture(event)
 				matched = True
