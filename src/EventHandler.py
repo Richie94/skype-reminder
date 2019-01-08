@@ -61,19 +61,14 @@ class MySkype(SkypeEventLoop):
 		self.last_messages = []
 
 	def cycle(self):
-		try:
-			super(MySkype, self).cycle()
-			now = datetime.datetime.now()
-			today = now.strftime("%d-%m-%Y")
+		super(MySkype, self).cycle()
+		now = datetime.datetime.now()
+		today = now.strftime("%d-%m-%Y")
 
-			if (now.hour > THRESH_HOUR) & (self.cpp.get_last_daily_write() != today):
-				self.cpp.set_last_daily_write()
-				self.do_once_a_day()
+		if (now.hour > THRESH_HOUR) & (self.cpp.get_last_daily_write() != today):
+			self.cpp.set_last_daily_write()
+			self.do_once_a_day()
 
-		except Exception as e:
-			logging.error("Error in cycle", e)
-			time.sleep(10)
-			pass
 
 
 	def loop(self):
@@ -245,5 +240,18 @@ if __name__ == "__main__":
 	consoleHandler.setFormatter(logFormatter)
 	logging.getLogger().addHandler(consoleHandler)
 
+	error_count = 0
 	evl = MySkype()
-	evl.loop()
+	while True:
+		if error_count > 5:
+			# aka restart
+			error_count = 0
+			evl = MySkype()
+		try:
+			evl.loop()
+		except KeyboardInterrupt:
+			sys.exit()
+		except Exception as e:
+			print(e)
+			error_count += 1
+			time.sleep(10)
