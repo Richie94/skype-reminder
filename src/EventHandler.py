@@ -69,8 +69,6 @@ class MySkype(SkypeEventLoop):
 			self.cpp.set_last_daily_write()
 			self.do_once_a_day()
 
-
-
 	def loop(self):
 		while True:
 			self.cycle()
@@ -240,18 +238,20 @@ if __name__ == "__main__":
 	consoleHandler.setFormatter(logFormatter)
 	logging.getLogger().addHandler(consoleHandler)
 
-	error_count = 0
 	evl = MySkype()
+	cycleCounter = 0
 	while True:
-		if error_count > 5:
-			# aka restart
-			error_count = 0
+		# skype enfores relogin after 24h / expires token, so we do that manually
+		if cycleCounter > 20000:
 			evl = MySkype()
+			cycleCounter = 0
+
 		try:
-			evl.loop()
+			cycleCounter += 1
+			evl.cycle()
+			time.sleep(1)
 		except KeyboardInterrupt:
 			sys.exit()
 		except Exception as e:
 			print(e)
-			error_count += 1
 			time.sleep(10)
