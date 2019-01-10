@@ -243,6 +243,7 @@ if __name__ == "__main__":
 	while True:
 		# skype enfores relogin after 24h / expires token, so we do that manually
 		if cycleCounter > 20000:
+			logging.info("Restart Client to Request new Token")
 			evl = MySkype()
 			cycleCounter = 0
 
