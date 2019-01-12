@@ -7,7 +7,7 @@ import logging
 import multiprocessing
 
 
-from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg
+from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg, core
 
 import requests
 import re
@@ -262,6 +262,9 @@ if __name__ == "__main__":
 
 		except KeyboardInterrupt:
 			sys.exit()
+		except core.SkypeAuthException:
+			print(e)
+			time.sleep(600)
 		except Exception as e:
 			print(e)
 			time.sleep(10)
