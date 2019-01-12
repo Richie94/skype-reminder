@@ -263,7 +263,8 @@ if __name__ == "__main__":
 		p = multiprocessing.Process(target=evl.cycle)
 		p.start()
 		time.sleep(1)
-		p.join(10)
+		p.join(600)
 
 		if p.is_alive():
+			logging.error("Task not finished after 600s, terminate")
 			p.terminate()
