@@ -6,8 +6,8 @@ import random
 import logging
 import multiprocessing
 
-
-from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg, core
+import skpy
+from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg
 
 import requests
 import re
@@ -63,13 +63,22 @@ class MySkype(SkypeEventLoop):
 		self.last_messages = []
 
 	def cycle(self):
-		super(MySkype, self).cycle()
-		now = datetime.datetime.now()
-		today = now.strftime("%d-%m-%Y")
+		try :
+			super(MySkype, self).cycle()
+			now = datetime.datetime.now()
+			today = now.strftime("%d-%m-%Y")
 
-		if (now.hour > THRESH_HOUR) & (self.cpp.get_last_daily_write() != today):
-			self.cpp.set_last_daily_write()
-			self.do_once_a_day()
+			if (now.hour > THRESH_HOUR) & (self.cpp.get_last_daily_write() != today):
+				self.cpp.set_last_daily_write()
+				self.do_once_a_day()
+		except KeyboardInterrupt:
+			sys.exit()
+		except skpy.core.SkypeAuthException as e:
+			print(e)
+			time.sleep(600)
+		except Exception as e:
+			print(e)
+			time.sleep(10)
 
 	def loop(self):
 		while True:
@@ -249,22 +258,12 @@ if __name__ == "__main__":
 			evl = MySkype()
 			cycleCounter = 0
 
-		try:
-			cycleCounter += 1
-			# do cycle in process because it seems to freeze after some time so we can kill it
-			p = multiprocessing.Process(target=evl.cycle)
-			p.start()
-			time.sleep(1)
-			p.join(10)
+		cycleCounter += 1
+		# do cycle in process because it seems to freeze after some time so we can kill it
+		p = multiprocessing.Process(target=evl.cycle)
+		p.start()
+		time.sleep(1)
+		p.join(10)
 
-			if p.is_alive():
-				p.terminate()
-
-		except KeyboardInterrupt:
-			sys.exit()
-		except core.SkypeAuthException:
-			print(e)
-			time.sleep(600)
-		except Exception as e:
-			print(e)
-			time.sleep(10)
+		if p.is_alive():
+			p.terminate()
