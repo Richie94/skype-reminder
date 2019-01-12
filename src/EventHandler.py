@@ -74,10 +74,10 @@ class MySkype(SkypeEventLoop):
 		except KeyboardInterrupt:
 			sys.exit()
 		except skpy.core.SkypeAuthException as e:
-			print(e)
+			print(e, "Wait 600s")
 			time.sleep(600)
 		except Exception as e:
-			print(e)
+			print(e, "Wait 10s")
 			time.sleep(10)
 
 	def loop(self):
