@@ -4,6 +4,8 @@ import resources.config
 
 import random
 import logging
+import multiprocessing
+
 
 from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg
 
@@ -249,8 +251,15 @@ if __name__ == "__main__":
 
 		try:
 			cycleCounter += 1
-			evl.cycle()
+			# do cycle in process because it seems to freeze after some time so we can kill it
+			p = multiprocessing.Process(target=evl.cycle)
+			p.start()
 			time.sleep(1)
+			p.join(10)
+
+			if p.is_alive():
+				p.terminate()
+
 		except KeyboardInterrupt:
 			sys.exit()
 		except Exception as e:
