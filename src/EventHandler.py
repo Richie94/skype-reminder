@@ -39,7 +39,8 @@ class MySkype(SkypeEventLoop):
 
 	def __init__(self):
 		self.cpp = CleanPlanProvider()
-		super(MySkype, self).__init__(user=self.cpp.login_data["email"], pwd=self.cpp.login_data["password"])
+		super(MySkype, self).__init__(user=self.cpp.login_data["email"], pwd=self.cpp.login_data["password"],
+		                              tokenFile=resources.config.path + "tokenFile")
 		self.ALL_COMMANDS = {PING_CMD: self.pong,
 		                     BATHROOM_SWITCH_CMD: self.move_bathroom,
 		                     USERS_LIST: self.list_users,
