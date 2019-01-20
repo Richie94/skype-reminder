@@ -147,7 +147,9 @@ class MySkype(SkypeEventLoop):
 		for user in persons:
 			if user in self.user_names:
 
-				self.bath_plan[user] = str(int((self.bath_plan[user]) + 1) % len(self.users))
+				job_number = int(self.bath_plan[user])
+				job_number += 1
+				self.bath_plan[user] = str(job_number % len(self.users.user_list))
 
 				if not self.test_mode:
 					self.cpp.postpone_bathroom(user, self.bath_plan[user])
