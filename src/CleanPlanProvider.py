@@ -28,7 +28,7 @@ class CleanPlanProvider(object):
 		return {x["name"]: x["job_id"] for x in self.db.bathroom.find()}
 
 	def postpone_bathroom(self, user, job_id):
-		self.db.bathroom.update_one({"name": user}, {"$_set": {"job_id": job_id}})
+		self.db.bathroom.update_one({"name": user}, {"$set": {"job_id": job_id}})
 
 	def generate_cleanplan(self):
 		now = datetime.datetime.now()
