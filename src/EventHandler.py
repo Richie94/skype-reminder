@@ -102,7 +102,7 @@ class MySkype(SkypeEventLoop):
 				matched = True
 			elif isinstance(event.msg, SkypeTextMsg):
 				for CMD in self.ALL_COMMANDS.keys():
-					REGEX = re.compile(CMD[0])
+					REGEX = re.compile(CMD[0], re.IGNORECASE)
 					if REGEX.match(msg_content):
 						self.ALL_COMMANDS.get(CMD)(event)
 						matched = True
