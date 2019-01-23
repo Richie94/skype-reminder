@@ -82,9 +82,13 @@ class MySkype(SkypeEventLoop):
 			time.sleep(10)
 
 	def loop(self):
+		self.counter = 0
 		while True:
 			self.cycle()
+			self.counter += 1
 			time.sleep(1)
+			if self.counter % 500 == 0:
+				logging.info("Still alive")
 
 	def onEvent(self, event):
 		if isinstance(event, SkypeNewMessageEvent):
