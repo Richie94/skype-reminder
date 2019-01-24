@@ -86,7 +86,6 @@ class MySkype(SkypeEventLoop):
 		while True:
 			self.cycle()
 			self.counter += 1
-			time.sleep(1)
 			if self.counter % 500 == 0:
 				logging.info("Still alive")
 
