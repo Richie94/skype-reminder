@@ -240,7 +240,7 @@ class MySkype(SkypeEventLoop):
 			if self.cpp.get_bath_assignment()[user] == job.id:
 				self.write_message_to(to, "Außerdem bist du mit Bad dran.")
 
-			if job.name == "Müll" and calendar_week % 3 == 2:
+			if job.name == "Müll" and calendar_week % 3 == 1:
 				self.write_message_to(to, "Denk an die Flaschen, du Flasche ;)")
 
 
