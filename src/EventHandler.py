@@ -1,3 +1,4 @@
+import argparse
 import sys
 sys.path.insert(0,'../')
 import resources.config
@@ -253,8 +254,16 @@ if __name__ == "__main__":
 	consoleHandler.setFormatter(logFormatter)
 	logging.getLogger().addHandler(consoleHandler)
 
+	parser = argparse.ArgumentParser()
+	parser.add_argument("--single", help="just a single run instead of loop")
+	args = parser.parse_args()
+
 	evl = MySkype()
-	evl.loop()
+
+	if args.single:
+		evl.cycle()
+	else:
+		evl.loop()
 	#cycleCounter = 0
 	#while True:
 		# skype enfores relogin after 24h / expires token, so we do that manually
