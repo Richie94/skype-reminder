@@ -258,6 +258,7 @@ if __name__ == "__main__":
 	parser.add_argument("--single", help="just a single run instead of loop")
 	args = parser.parse_args()
 
+	logging.info("Started EventHandler")
 	evl = MySkype()
 
 	if args.single:
