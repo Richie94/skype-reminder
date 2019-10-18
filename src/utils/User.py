@@ -1,8 +1,9 @@
 class User(object):
 
 	def __init__(self, name, contact):
-		self.name= name
+		self.name = name
 		self.contact = contact
+
 
 class UserManager(object):
 

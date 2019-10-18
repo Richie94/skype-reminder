@@ -7,9 +7,7 @@ import logging
 
 from pymongo import MongoClient
 
-from skypeCleanReminder.Job import Job, JobManager
-from skypeCleanReminder.User import User, UserManager
-
+from utils import User, UserManager, Job, JobManager
 
 class SkypeReminder(object):
 
@@ -23,7 +21,7 @@ class SkypeReminder(object):
 
 		self.path = "/mnt/data/workspace/python/skypeReminder/resources/"
 
-		self.skype = Skype(login_data["email"], login_data["password"])
+		self.skype = Skype(user=login_data["email"], pwd=login_data["password"])
 		today = datetime.datetime.now()
 		assignment_key = self.assignment_key_from_date(today)
 
@@ -35,6 +33,11 @@ class SkypeReminder(object):
 			self.currentAssignments = list(self.db.assignments.find({"date": assignment_key}))
 
 		self.bath_plan = {x["name"]: x["job_id"] for x in self.db.bathroom.find()}
+
+		self.commands = {"postpone_bathroom": ("Specify users which shall be postponed by one week.", self.postpone_bathroom),
+		                 "bathroom": ("Show current bathroom assignments", self.print_bathroom),
+		                 "help": ("Shows this help menu", self.print_help),
+		                 "users": ("List of all users", self.print_users)}
 
 	def generate_cleanplan(self):
 		now = datetime.datetime.now()
@@ -70,15 +73,27 @@ class SkypeReminder(object):
 		logging.info("Finished Skype Reminder")
 
 	# Takes list of user names
-	#def postpone_bathroom(self, users):
-	#	job_amount = len(self.jobs)
-	#	for user in users:
-	#		current_linked_task = self.bath_plan[user]
-	#		current_linked_task_id = int([x for x in self.jobs if x.endswith(current_linked_task)][0].split("__")[0])
-	#		new_task = [x for x in self.jobs
-	#		            if x.startswith(str((current_linked_task_id+1) % job_amount))][0]
-	#		self.bath_plan[user] = new_task
-	#	json.dump(self.bath_plan, open(self.path + "bathplan.json", "w"))
+	def postpone_bathroom(self, fromContact, *args):
+		allowed_user_names = [u.name for u in self.user.user_list]
+		for user in args[0].split(" "):
+			if user in allowed_user_names:
+				self.bath_plan[user] = str((1 + int(self.bath_plan[user])) % len(self.jobs.job_list))
+				self.db.bathroom.update_one({"name": user}, {"$_set": {"job_id": self.bath_plan[user]}})
+
+		for user in self.user.user_list:
+			self.write_message(user.contact, "{} updated bathroom_plan".format(fromContact))
+
+	def print_bathroom(self, fromContact, *args):
+		format_bathroom = ""
+		for name, job_id in self.bath_plan.items():
+			format_bathroom += name + ": " + self.jobs.getJobById(job_id) + "\n"
+		self.write_message(fromContact, format_bathroom)
+
+	def print_users(self, fromContact, *args):
+		self.write_message(fromContact, ", ".join([ u["name"] for u in self.user.user_list]))
+
+	def print_help(self, fromContact, *args):
+		self.write_message(fromContact, "\n".join([cmd + ": " + tup[0] for cmd, tup in self.commands.items()]))
 
 	def motivational_tweet(self, contact):
 		quotes = set(open(self.path + "positiveQuotes.txt", "r").read().split("\n"))
@@ -125,10 +140,6 @@ class SkypeReminder(object):
 			msgs[contact] = self.skype.contacts[contact].chat.getMsgs()
 		return msgs
 
-	# possible commands:
-	# bathroom sven markus -> postpone_bathroom + inform
-	# help -> shows all current functions
-	# list users -> returns all users
 
 	def evaluate_picture(self):
 		for chat in self.skype.contacts:
@@ -191,5 +202,5 @@ if __name__ == "__main__":
 	logging.getLogger().addHandler(consoleHandler)
 
 	reminder = SkypeReminder()
-	#reminder.write_tex()
 	reminder.do_normal_jobs()
+	#reminder.postpone_bathroom("joker1694", "Richard Markus")
