@@ -5,7 +5,6 @@ import resources.config
 
 import random
 import logging
-import multiprocessing
 
 import skpy
 from skpy import SkypeEventLoop, SkypeNewMessageEvent, SkypeImageMsg, SkypeTextMsg
@@ -265,22 +264,3 @@ if __name__ == "__main__":
 		evl.cycle()
 	else:
 		evl.loop()
-	#cycleCounter = 0
-	#while True:
-		# skype enfores relogin after 24h / expires token, so we do that manually
-		#if cycleCounter > 20000:
-		#	logging.info("Restart Client to Request new Token")
-		#	evl = MySkype()
-		#	cycleCounter = 0
-
-		#cycleCounter += 1
-		# do cycle in process because it seems to freeze after some time so we can kill it
-		#p = multiprocessing.Process(target=evl.cycle)
-		#p.start()
-		#time.sleep(1)
-		#p.join(600)
-		#evl.cycle()
-
-		#if p.is_alive():
-		#	logging.error("Task not finished after 600s, terminate")
-		#	p.terminate()
